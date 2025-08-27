@@ -20,7 +20,7 @@ This document describes the updated data flow and workflow for AWS IoT playback 
 | Criterion              | Amazon Timestream for LiveAnalytics                               | Amazon Timestream for InfluxDB                                   |
 |------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
 | **Service Availability** | Discontinued for new customers                                   | Available and AWS-recommended                                |
-| **Storage Tiering**      | Two-tier: in-memory + magnetic                          | Single-tier, retention defined by user |
+| **Storage Tiering**      | Two-tier: in-memory + magnetic          | Single-tier |
 | **Retention**      | User defines per-tier(in-memory, magnetic); data auto-deletes after expiration | User defines; data auto-deletes after expiration |
 | **Latency**              | <100ms (in-memory), 0.1–0.5s (in magnetic)          | Low latency, typically <200ms for most queries |
 | **Scheduled Query / Export Data** | Native scheduled queries + export to S3 | No native support to export data to S3                           |
@@ -48,7 +48,7 @@ sequenceDiagram
     Device->>Core: MQTT publish (1 Hz)
     Core-->>Batch: Forward message (cross-account)
     Batch->>TS: PutRecord (deduplicated)
-    rect rgb(220,220,220)
+    rect rgb(236,236,236)
 	    Batch ->> TS: Query last data per hour
 	    TS -->> Batch: Return last record for each hour	
 	    Batch ->> S3: Export Parquet partitions
