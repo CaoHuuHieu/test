@@ -21,7 +21,7 @@ This document describes the updated data flow and workflow for AWS IoT playback 
 |------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
 | **Service Availability** | Discontinued for new customers                                   | Available and AWS-recommended                                |
 | **Storage Tiering**      | Two-tier: in-memory + magnetic                          | Single-tier, retention defined by user |
-| **Retention **      | User defines per-tier(in-memory, magnetic); data auto-deletes after expiration | User defines; data auto-deletes after expiration |
+| **Retention**      | User defines per-tier(in-memory, magnetic); data auto-deletes after expiration | User defines; data auto-deletes after expiration |
 | **Latency**              | <100ms (in-memory), 0.1–0.5s (in magnetic)          | Low latency, typically <200ms for most queries |
 | **Scheduled Query / Export Data** | Native scheduled queries + export to S3 | No native support to export data to S3                           |
 | **Pricing Model**        | Pay-per-use (ingest, storage, query)                         | Provisioned capacity or usage-based |
@@ -49,12 +49,12 @@ sequenceDiagram
     Core-->>Batch: Forward message (cross-account)
     Batch->>TS: PutRecord (deduplicated)
     rect rgb(220,220,220)
-    Batch ->> TS: Query last data per hour
-    TS -->> Batch: Return last record for each hour	
-    Batch ->> S3: Export Parquet partitions
-    loop Hourly Schedule
-        Batch ->> Batch: Execute job every hour
-    end
+	    Batch ->> TS: Query last data per hour
+	    TS -->> Batch: Return last record for each hour	
+	    Batch ->> S3: Export Parquet partitions
+	    loop
+	        Batch ->> Batch: Execute export job every hour (4->7)
+	    end
     end
     
     FE->>API: Request playback at timestamp t
