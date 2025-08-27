@@ -16,9 +16,10 @@ This document describes the updated data flow and workflow for AWS IoT playback 
 
 
 ### Comparison: Amazon Timestream for LiveAnalytics vs InfluxDB
+---
 
-| Criterion              | Amazon Timestream for LiveAnalytics                               | Amazon Timestream for InfluxDB                                   |
-|------------------------|-------------------------------------------------------------------|------------------------------------------------------------------|
+| Criterion| Amazon Timestream for LiveAnalytics | Amazon Timestream for InfluxDB |
+|------------------------|----------------------|------------------------|
 | **Service Availability** | Discontinued for new customers                                   | Available and AWS-recommended                                |
 | **Storage Tiering**      | Two-tier: in-memory + magnetic          | Single-tier |
 | **Retention**      | User defines per-tier(in-memory, magnetic); data auto-deletes after expiration | User defines; data auto-deletes after expiration |
@@ -28,11 +29,12 @@ This document describes the updated data flow and workflow for AWS IoT playback 
 
 
 ### Detailed Updates
+---
 - Use **Amazon Timestream for InfluxDB** because Amazon Timestream for LiveAnalytics is no longer supported.
 - The **Back-End service** will handle data export to S3, since Amazon Timestream for InfluxDB does not support Scheduled Queries to export data to S3.
 
 ### New Sequence Overview
-
+---
 ```mermaid
 sequenceDiagram
     autonumber
