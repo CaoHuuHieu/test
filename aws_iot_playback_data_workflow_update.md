@@ -30,7 +30,7 @@ This document describes the updated data flow and workflow for AWS IoT playback 
 
 ### Detailed Updates
 ---
-- Use **Amazon Timestream for InfluxDB** because Amazon Timestream for LiveAnalytics is no longer supported.
+- Use **Amazon Timestream for InfluxDB** because Amazon Timestream for LiveAnalytics is no longer supported for new customer ([see AWS announcement](https://docs.aws.amazon.com/timestream/latest/developerguide/AmazonTimestreamForLiveAnalytics-availability-change.html#:~:text=After%20careful%20consideration,its%20similar%20functionality.)).  
 - The **Back-End service** will handle data export to S3, since Amazon Timestream for InfluxDB does not support Scheduled Queries to export data to S3.
 
 ### New Sequence Overview
