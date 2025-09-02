@@ -151,6 +151,6 @@ s3://<bucket>/data/
 | **Main goal**       | Preserve failed payloads as durable audit evidence                                          | Fast detection, monitoring, and troubleshooting by operators              |
 | **Data Durability** | High – payloads are securely stored in S3 with long-term retention                          | Medium – logs may be lost due to rotation or system failures              |
 | **Traceability**    | Easier – data is stored in a structured format on S3                                        | Good for real-time visibility, but harder for long-term forensic analysis |
-| **End-user impact** | None – purely backend archival, no direct feedback to FE                                    | LHigh – errors are pushed to FE via WebSocket in real time                |
-| **Complexity**      | Higher                                                                                      | Lower – simple structured logging + WebSocket push                        |
+| **End-user impact** | None – purely backend archival, no direct feedback to FE                                    | High – errors are pushed to FE via WebSocket in real time                 |
+| **Complexity**      | Higher                                                                                      | Medium – simple structured logging + WebSocket push                       |
 | **Use case fit**    | Best when failures are rare, but root-cause analysis and evidence preservation are critical | Best when failures are more common and operators need immediate awareness |
