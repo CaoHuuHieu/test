@@ -103,19 +103,19 @@ s3://<bucket>/data/
     - `raw_payload` —the original payload from MQTT (kept as-is, even if malformed)
     - `error_message` — reason why the payload is invalid
     - `source` — service/module name where the error is logged
-    
 - **Logging**
-  - Use Jackson (or similar) to convert the POJO to JSON to ensures logs are **structured**, **parseable**, and **queryable**. 
+  - Use Jackson (or similar) to convert the POJO to JSON to ensures logs are **structured**, **parseable**, and **queryable**.
   - Write the JSON object into the backend log system (e.g., SLF4J + Logback).
-	
 - **WebSocket Notification**
-  - **BE:** Simultaneously, push that JSON object over WebSocket to a dedicated topic. The topic format is `<mqtt_topic>/error`, where `<mqtt_topic>` is the full topic received from MQTT.  Example:  
-`123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174111/navya/state/error`
-  - **FE:** Subscribed FE clients receive this error message in real time.
-  -- For vehicles, on the list page, the FE can show an error indicator (e.g., a red badge or warning icon) next to the affected vehicle. On the detail page, the FE can display the full error information, enabling users to inspect details such as the timestamp, raw payload, and error message.
-  -- For other edge types like signal or weather, we will follow the same approach but only display the information on the site detail page if needed.
- - **Anti-spam / Deduplication**
-  --  For devices sending high-frequency invalid messages (e.g., 2 per second), the system will limit logging & WebSocket pushes to twice per minute per edge. This avoids log/notification flooding while still maintaining visibility.
+  - **BE:**
+    - Simultaneously, push that JSON object over WebSocket to a dedicated topic.
+    - The topic format is `<mqtt_topic>/error`, where `<mqtt_topic>` is the full topic received from MQTT. Ex: `<tenant_uuid>/<edge_uuid>/navya/state/error`
+  - **FE:**
+    - Subscribed FE clients receive this error message in real time.
+    - For vehicles, on the list page, the FE can show an error indicator (e.g., a red badge or warning icon) next to the affected vehicle. On the detail page, the FE can display the full error information, enabling users to inspect details such as the timestamp, raw payload, and error message.
+    - For other edge types like signal or weather, we will follow the same approach but only display the information on the site detail page if needed.
+- **Anti-spam / Deduplication**
+  -- For devices sending high-frequency invalid messages (e.g., 2 per second), the system will limit logging & WebSocket pushes to twice per minute per edge. This avoids log/notification flooding while still maintaining visibility.
 - **Example Log Entry (JSON)**
 
 ```json
@@ -145,12 +145,12 @@ s3://<bucket>/data/
 
 ## Decision Guide (B vs C)
 
-| Criterion           | Solution B — Direct‑to‑S3                                          | Solution C — Logging and WebSocket to End Users|
-| ------------------- | ------------------------------------------------------------------ | ------------------------------------------------------------ |
-| **Failure volume**  | Low (rare failures)                                                | Medium–High                                                  |
-| **Main goal**       | Preserve failed payloads as durable audit evidence             | Fast detection, monitoring, and troubleshooting by operators                      |
-| **Data Durability** | High – payloads are securely stored in S3 with long-term retention | Medium – logs may be lost due to rotation or system failures |
-| **Traceability**    | Easier – data is stored in a structured format on S3               | Good for real-time visibility, but harder for long-term forensic analysis                           |
-| **End-user impact**      | None – purely backend archival, no direct feedback to FE                                                             | LHigh – errors are pushed to FE via WebSocket in real time 
-| **Complexity**      | Higher| Lower – simple structured logging + WebSocket push         
-| **Use case fit**    | Best when failures are rare, but root-cause analysis and evidence preservation are critical| Best when failures are more common and operators need immediate awareness |
+| Criterion           | Solution B — Direct‑to‑S3                                                                   | Solution C — Logging and WebSocket to End Users                           |
+| ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **Failure volume**  | Low (rare failures)                                                                         | Medium–High                                                               |
+| **Main goal**       | Preserve failed payloads as durable audit evidence                                          | Fast detection, monitoring, and troubleshooting by operators              |
+| **Data Durability** | High – payloads are securely stored in S3 with long-term retention                          | Medium – logs may be lost due to rotation or system failures              |
+| **Traceability**    | Easier – data is stored in a structured format on S3                                        | Good for real-time visibility, but harder for long-term forensic analysis |
+| **End-user impact** | None – purely backend archival, no direct feedback to FE                                    | LHigh – errors are pushed to FE via WebSocket in real time                |
+| **Complexity**      | Higher                                                                                      | Lower – simple structured logging + WebSocket push                        |
+| **Use case fit**    | Best when failures are rare, but root-cause analysis and evidence preservation are critical | Best when failures are more common and operators need immediate awareness |
