@@ -109,11 +109,11 @@ s3://<bucket>/data/
 - **WebSocket Notification**
   - **BE:**
     - Simultaneously, push that JSON object over WebSocket to a dedicated topic.
-    - The topic format is `<mqtt_topic>/error`, where `<mqtt_topic>` is the full topic received from MQTT. Ex: `<tenant_uuid>/<edge_uuid>/navya/state/error`
+    - The topic format: `<tenant_uuid>/<edge_uuid>/payload/error`. Ex: `<tenant_uuid>/<edge_uuid>/payload/error`
   - **FE:**
-    - Subscribed FE clients receive this error message in real time.
-    - For vehicles, on the list page, the FE can show an error indicator (e.g., a red badge or warning icon) next to the affected vehicle. On the detail page, the FE can display the full error information, enabling users to inspect details such as the timestamp, raw payload, and error message.
-    - For other edge types like signal or weather, we will follow the same approach but only display the information on the site detail page if needed.
+    - Frontend clients subscribed to the WebSocket topic will receive error messages in real time.
+    - For **vehicle edges**, the list page can display an **error indicator** (e.g., a red badge or warning icon) next to the affected vehicle. On the detail page, users can view the **full error details**, including timestamp, raw payload, and error message.
+    - For **other edge types** (e.g., signal or weather), the same error messages will be handled similarly if necessary, but displayed only on the **site detail page**.
 - **Anti-spam / Deduplication**
   -- For devices sending high-frequency invalid messages (e.g., 2 per second), the system will limit logging & WebSocket pushes to twice per minute per edge. This avoids log/notification flooding while still maintaining visibility.
 - **Example Log Entry (JSON)**
