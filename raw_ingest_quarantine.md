@@ -84,12 +84,12 @@ s3://<bucket>/data/
 
 ---
 
-## Solution C — Logging and WebSocket to End Users (FE)
+## Solution C — Logging
 
 ### Purpose
 
-- **Backend visibility**: Log malformed payloads immediately into the logging system so that developers and administrators can quickly identify which devices are sending malformed data.
-- **End-user visibility**: At the same time, push error messages via WebSocket to the Frontend (FE), enabling end-users or operators to monitor abnormal conditions in real time.
+Log malformed payloads immediately to the console or log system to capture errors as they occur.  
+This allows developers or admins to quickly identify which devices are sending malformed payloads.
 
 ### Approach
 
@@ -103,19 +103,14 @@ s3://<bucket>/data/
     - `raw_payload` —the original payload from MQTT (kept as-is, even if malformed)
     - `error_message` — reason why the payload is invalid
     - `source` — service/module name where the error is logged
-- **Logging**
-  - Use Jackson (or similar) to convert the POJO to JSON to ensures logs are **structured**, **parseable**, and **queryable**.
-  - Write the JSON object into the backend log system (e.g., SLF4J + Logback).
-- **WebSocket Notification**
-  - **BE:**
-    - Simultaneously, push that JSON object over WebSocket to a dedicated topic.
-    - The topic format: `<tenant_uuid>/<edge_uuid>/payload/error`. Ex: `<tenant_uuid>/<edge_uuid>/payload/error`
-  - **FE:**
-    - Frontend clients subscribed to the WebSocket topic will receive error messages in real time.
-    - For **vehicle edges**, the list page can display an **error indicator** (e.g., a red badge or warning icon) next to the affected vehicle. On the detail page, users can view the **full error details**, including timestamp, raw payload, and error message.
-    - For **other edge types** (e.g., signal or weather), the same error messages will be handled similarly if necessary, but displayed only on the **site detail page**.
-- **Anti-spam / Deduplication**
-  -- For devices sending high-frequency invalid messages (e.g., 2 per second), the system will limit logging & WebSocket pushes to twice per minute per edge. This avoids log/notification flooding while still maintaining visibility.
+- **Serialize to JSON**
+
+  - Use Jackson (or similar) to convert the POJO to JSON.
+  - JSON format ensures logs are **structured**, **parseable**, and **queryable**.
+
+- **Write log**
+  - Write the JSON log to console or log system (SLF4J + Logback, etc.).
+  - Anti-spam / Dedup Logging: For edges sending 1 msg/s, system will log **once/min/edge** if errors repeat. → Prevents log spam, and keeps logs clear for troubleshooting.
 - **Example Log Entry (JSON)**
 
 ```json
@@ -129,6 +124,25 @@ s3://<bucket>/data/
   "source": "VehicleStateItemProcessor"
 }
 ```
+
+## New Approach — Logging and WebSocket Notification to End Users (FE)
+
+**Purpose**
+
+- **Backend visibility**: Log malformed payloads immediately into the logging system so that developers and administrators can quickly identify which devices are sending malformed payload.
+- **End-user visibility**: At the same time, push error messages via WebSocket to the Frontend (FE), enabling end users or operators to monitor abnormal edges in real time.
+
+**Approach**
+
+- **BE:**
+  - Simultaneously, push above JSON object over WebSocket to a dedicated topic.
+  - Topic format: `<tenant_uuid>/<edge_uuid>/payload/error`. Ex: `123e4567-e89b-12d3-a456-426614174000/123e4567-e89b-12d3-a456-426614174111/payload/error`
+- **FE:**
+  - Frontend clients subscribed to the WebSocket topic will receive error messages in real time.
+  - For **vehicle edges**, the list page can display an **error indicator** (e.g., a red badge or warning icon) next to the affected vehicle. On the detail page, users can view the **full error details**, including timestamp, raw payload, and error message.
+  - For **other edge types** (e.g., signal or weather), the same error messages will be handled similarly if necessary, but displayed only on the **site detail page**.
+- **Anti-spam / Deduplication**
+  -- For devices sending high-frequency invalid messages (e.g., 2 per second), the system will limit logging & WebSocket pushes to twice per minute per edge. This avoids log/notification flooding while still maintaining visibility.
 
 ---
 
@@ -145,7 +159,7 @@ s3://<bucket>/data/
 
 ## Decision Guide (B vs C)
 
-| Criterion           | Solution B — Direct‑to‑S3                                                                   | Solution C — Logging and WebSocket to End Users                           |
+| Criterion           | Solution B — Direct‑to‑S3                                                                   | Solution C — Logging                                                      |
 | ------------------- | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
 | **Failure volume**  | Low (rare failures)                                                                         | Medium–High                                                               |
 | **Main goal**       | Preserve failed payloads as durable audit evidence                                          | Fast detection, monitoring, and troubleshooting by operators              |
